@@ -66,7 +66,6 @@ module.exports = class StocksController {
         for (let index = 1; index <= years; index++) {
             year = year.subtract(index, "years");
             let currentDy = 0;
-
             data.forEach((element) => {
                 if (year.isSameOrBefore(element.payDate)) {
                     currentDy += element.dy;
