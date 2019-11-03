@@ -4,7 +4,7 @@ const cache = require('memory-cache')
 const express = require('express');
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 5000;
 
 let main = async (symbol) => {
   const proventos = 'https://www.bussoladoinvestidor.com.br/nb/api/v1/stocks/'+symbol+'/proventos';
