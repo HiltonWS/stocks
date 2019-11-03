@@ -30,7 +30,7 @@ module.exports = class StocksController {
                         let payDate = element.payDate;
                         if (payDate) {
                             let payDateStockFormat = moment(element.payDate * 1000).subtract('1', "days").format("YYYY-MM-DD");
-                            if (stockPriceList["Time Series (Daily)"]) {
+                            if (stockPriceList["Time Series (Daily)"] && element.type ==='DIVIDENDO' || element.type ==='JUROS') {
                                 let stockPricepayDate = stockPriceList["Time Series (Daily)"][payDateStockFormat];
                                 if (stockPricepayDate) {
                                     let obj = {};
@@ -52,8 +52,6 @@ module.exports = class StocksController {
         }catch(e){
             this.stocks(symbol);
         }
-        
-
     }
 
     async dyLastXyears(symbol, years) {
