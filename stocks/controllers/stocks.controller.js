@@ -21,30 +21,38 @@ module.exports = class StocksController {
         if (cached) {
             return cached;
         }
-        return await rp({ uri: stockPrice }).then(async (body1) => {
-            stockPriceList = JSON.parse(body1);
-            return await rp({ uri: proventos }).then(async (body) => {
-                body = JSON.parse(body)
-                body.forEach(element => {
-                    let payDate = element.payDate;
-                    if (payDate) {
-                        let payDateStockFormat = moment(element.payDate * 1000).subtract('1', "days").format("YYYY-MM-DD");
-                        let stockPricepayDate = stockPriceList["Time Series (Daily)"][payDateStockFormat];
-                        if (stockPricepayDate) {
-                            let obj = {};
-                            element.payDate = moment(payDate * 1000).format("YYYY-MM-DD");
-                            obj.payDate = element.payDate;
-                            obj.nominal = element.nominal;
-                            obj.price = stockPricepayDate["4. close"];
-                            obj.dy = obj.nominal / obj.price
-                            result.push(obj);
+        try{
+            return await rp({ uri: stockPrice }).then(async (body1) => {
+                stockPriceList = JSON.parse(body1);
+                return await rp({ uri: proventos }).then(async (body) => {
+                    body = JSON.parse(body)
+                    body.forEach(element => {
+                        let payDate = element.payDate;
+                        if (payDate) {
+                            let payDateStockFormat = moment(element.payDate * 1000).subtract('1', "days").format("YYYY-MM-DD");
+                            if (stockPriceList["Time Series (Daily)"]) {
+                                let stockPricepayDate = stockPriceList["Time Series (Daily)"][payDateStockFormat];
+                                if (stockPricepayDate) {
+                                    let obj = {};
+                                    element.payDate = moment(payDate * 1000).format("YYYY-MM-DD");
+                                    obj.payDate = element.payDate;
+                                    obj.nominal = element.nominal;
+                                    obj.price = stockPricepayDate["4. close"];
+                                    obj.dy = obj.nominal / obj.price
+                                    result.push(obj);
+                                }
+                            }
+    
                         }
-                    }
+                    });
+                    cache.put(this.cacheKey + symbol, result, this.cacheTime);
+                    return result;
                 });
-                cache.put(this.cacheKey + symbol, result, this.cacheTime);
-                return result;
             });
-        });
+        }catch(e){
+            stocks(symbol);
+        }
+        
 
     }
 
