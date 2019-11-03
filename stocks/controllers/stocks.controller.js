@@ -50,7 +50,7 @@ module.exports = class StocksController {
                 });
             });
         }catch(e){
-            stocks(symbol);
+            this.stocks(symbol);
         }
         
 
