@@ -14,13 +14,13 @@ module.exports = class StocksController {
 
     async stocks(symbol) {
         let cached = cache.get(this.cacheKey + symbol);
-        if((!lastResq && !cached) || moment().subtract("12","seconds").isSameOrAfter(lastResq)){
+        if((!lastResq && !cached) || moment().subtract("30","seconds").isSameOrAfter(lastResq)){
             lastResq = moment();
         }else{
             function timeout(ms) {
                 return new Promise(resolve => setTimeout(resolve, ms));
             }
-            await timeout(12000);
+            await timeout(30000);
         }
         const proventos = 'https://www.bussoladoinvestidor.com.br/nb/api/v1/stocks/' + symbol + '/proventos';
         const stockPrice = 'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=' + symbol + '.SA&apikey=YXPZ315O42XQTBFC&outputsize=full'
@@ -57,9 +57,13 @@ module.exports = class StocksController {
                     cache.put(this.cacheKey + symbol, result, this.cacheTime);
                     return result;
                 });
+            }).catch(async () =>{
+                await timeout(30000);
+                this.stocks(symbol);
             });
         }catch(e){
             this.stocks(symbol);
+            
         }
     }
 
