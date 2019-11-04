@@ -1,27 +1,21 @@
 const rp = require('request-promise');
 const cache = require('memory-cache');
 const moment = require('moment-timezone');
-let lastResq;
 
 module.exports = class StocksController {
+
+
     get cacheKey() {
         return "stock";
     }
 
     get cacheTime() {
         return 1000 * 60 ^ 2 * 24;
-    }   
+    }
 
     async stocks(symbol) {
         let cached = cache.get(this.cacheKey + symbol);
-        if((!lastResq && !cached) || moment().subtract("30","seconds").isSameOrAfter(lastResq)){
-            lastResq = moment();
-        }else{
-            function timeout(ms) {
-                return new Promise(resolve => setTimeout(resolve, ms));
-            }
-            await timeout(30000);
-        }
+
         const proventos = 'https://www.bussoladoinvestidor.com.br/nb/api/v1/stocks/' + symbol + '/proventos';
         const stockPrice = 'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=' + symbol + '.SA&apikey=YXPZ315O42XQTBFC&outputsize=full'
 
@@ -30,41 +24,34 @@ module.exports = class StocksController {
         if (cached) {
             return cached;
         }
-        try{
-            return await rp({ uri: stockPrice }).then(async (body1) => {
-                stockPriceList = JSON.parse(body1);
-                return await rp({ uri: proventos }).then(async (body) => {
-                    body = JSON.parse(body)
-                    body.forEach(element => {
-                        let payDate = element.payDate;
-                        if (payDate) {
-                            let payDateStockFormat = moment(element.payDate * 1000).subtract('1', "days").format("YYYY-MM-DD");
-                            if (stockPriceList["Time Series (Daily)"] && element.type ==='DIVIDENDO' || element.type ==='JUROS') {
-                                let stockPricepayDate = stockPriceList["Time Series (Daily)"][payDateStockFormat];
-                                if (stockPricepayDate) {
-                                    let obj = {};
-                                    element.payDate = moment(payDate * 1000).format("YYYY-MM-DD");
-                                    obj.payDate = element.payDate;
-                                    obj.nominal = element.nominal;
-                                    obj.price = stockPricepayDate["4. close"];
-                                    obj.dy = obj.nominal / obj.price
-                                    result.push(obj);
-                                }
+        return await rp({ uri: stockPrice }).then(async (body1) => {
+            stockPriceList = JSON.parse(body1);
+            return await rp({ uri: proventos }).then(async (body) => {
+                body = JSON.parse(body)
+                body.forEach(element => {
+                    let payDate = element.payDate;
+                    if (payDate) {
+                        let payDateStockFormat = moment(element.payDate * 1000).subtract('1', "days").format("YYYY-MM-DD");
+                        if (stockPriceList["Time Series (Daily)"] && element.type === 'DIVIDENDO' || element.type === 'JUROS') {
+                            let stockPricepayDate = stockPriceList["Time Series (Daily)"][payDateStockFormat];
+                            if (stockPricepayDate) {
+                                let obj = {};
+                                element.payDate = moment(payDate * 1000).format("YYYY-MM-DD");
+                                obj.payDate = element.payDate;
+                                obj.nominal = element.nominal;
+                                obj.price = stockPricepayDate["4. close"];
+                                obj.dy = obj.nominal / obj.price
+                                result.push(obj);
                             }
-    
                         }
-                    });
-                    cache.put(this.cacheKey + symbol, result, this.cacheTime);
-                    return result;
+
+                    }
                 });
-            }).catch(async () =>{
-                await timeout(30000);
-                this.stocks(symbol);
+                cache.put(this.cacheKey + symbol, result, this.cacheTime);
+                return result;
             });
-        }catch(e){
-            this.stocks(symbol);
-            
-        }
+        })
+
     }
 
     async dyLastXyears(symbol, years) {
@@ -85,7 +72,7 @@ module.exports = class StocksController {
         for (let index = 1; index <= years; index++) {
             year = year.subtract(index, "years");
             let currentDy = 0;
-            if(!data){
+            if (!data) {
                 this.dyLast5years(symbol, years);
             }
             data.forEach((element) => {
