@@ -1,6 +1,6 @@
 const rp = require('request-promise');
 const cache = require('memory-cache');
-const moment = require('moment-timezone');
+const tabletojson = require('tabletojson');
 
 module.exports = class StocksController {
 
@@ -16,93 +16,24 @@ module.exports = class StocksController {
     async stocks(symbol) {
         let cached = cache.get(this.cacheKey + symbol);
 
-        const proventos = 'https://www.bussoladoinvestidor.com.br/nb/api/v1/stocks/' + symbol + '/proventos';
-        const stockPrice = 'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=' + symbol + '.SA&apikey=YXPZ315O42XQTBFC&outputsize=full'
+        const raioX = "https://www.guiainvest.com.br/raiox/" + symbol + ".aspx";
 
-        let result = [];
-        let stockPriceList;
         if (cached) {
             return cached;
         }
-        return await rp({ uri: stockPrice }).then(async (body1) => {
-            stockPriceList = JSON.parse(body1);
-            return await rp({ uri: proventos }).then(async (body) => {
-                body = JSON.parse(body)
-                body.forEach(element => {
-                    let payDate = element.payDate;
-                    if (payDate) {
-                        let payDateStockFormat = moment(element.payDate * 1000).subtract('1', "days").format("YYYY-MM-DD");
-                        if (stockPriceList["Time Series (Daily)"] && element.type === 'DIVIDENDO' || element.type === 'JUROS') {
-                            let stockPricepayDate = stockPriceList["Time Series (Daily)"][payDateStockFormat];
-                            if (stockPricepayDate) {
-                                let obj = {};
-                                element.payDate = moment(payDate * 1000).format("YYYY-MM-DD");
-                                obj.payDate = element.payDate;
-                                obj.nominal = element.nominal;
-                                obj.price = stockPricepayDate["4. close"];
-                                obj.dy = obj.nominal / obj.price
-                                result.push(obj);
-                            }
-                        }
-
+        let raioXData = {};
+        tabletojson.convertUrl(raioX, (tables) =>{
+            if(tables && tables[3]){
+                tables[3].forEach(element => {
+                    if(element['0'] === 'Lucro por Ação (LPA) $'){
+                        raioXData.lpaAvg = (parseFloat(element['1'].replace(',', '.')) + parseFloat(element['2'].replace(',', '.')) + parseFloat(element['3'].replace(',', '.'))) / 3
+                    }else if(element['0'] === 'Valor Patr Ação (VPA) $'){
+                        raioXData.vpaAvg = (parseFloat(element['1'].replace(',', '.')) + parseFloat(element['2'].replace(',', '.')) + parseFloat(element['3'].replace(',', '.'))) / 3
                     }
                 });
-                cache.put(this.cacheKey + symbol, result, this.cacheTime);
-                return result;
-            });
-        })
-
-    }
-
-    async dyLastXyears(symbol, years) {
-        let data = await this.stocks(symbol);
-        let result = {};
-
-        result.dyAvg = cache.get(this.cacheKey + symbol + "dyAvg" + years) || 0;
-        result.dyMin = cache.get(this.cacheKey + symbol + "dyMin" + years) || 0;
-        result.dyMax = cache.get(this.cacheKey + symbol + "dyMax" + years) || 0;
-
-        if (result.dyAvg !== 0) {
-            return result.dyAvg;
-        }
-
-        let year = moment();
-        let findDy = []
-
-        for (let index = 1; index <= years; index++) {
-            year = year.subtract(index, "years");
-            let currentDy = 0;
-            if (!data) {
-                this.dyLast5years(symbol, years);
+                cache.put(this.cacheKey, raioXData, this.cacheTime);
+                return raioXData;
             }
-            data.forEach((element) => {
-                if (year.isSameOrBefore(element.payDate)) {
-                    currentDy += element.dy;
-                }
-            });
-            findDy.push(currentDy / years);
-        }
-
-        let totalDy = 0;
-        findDy.forEach(element => {
-            totalDy += element;
-
-        });
-        result.dyAvg = totalDy / findDy.length;
-        result.dyMax = Math.max(findDy);
-        result.dyMin = Math.min(findDy);
-
-        cache.put(this.cacheKey + symbol + "dyAvg" + years, result.dyAvg, this.cacheTime);
-        cache.put(this.cacheKey + symbol + "dyMax" + years, result.dyMax, this.cacheTime);
-        cache.put(this.cacheKey + symbol + "dyMin" + years, result.dyMin, this.cacheTime);
-        return result;
-    }
-
-    async dyLast5years(symbol) {
-        return await this.dyLastXyears(symbol, 5);
-    }
-
-    async dyLast1year(symbol) {
-        return this.dyLastXyears(symbol, 1);
+        })
     }
 }

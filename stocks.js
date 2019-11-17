@@ -9,11 +9,7 @@ const port = process.env.PORT || 5000;
 
 console.log("Populando Aguarde...");
 let tickers = [];
-function sleep(ms) {
-  return new Promise(resolve => {
-    setTimeout(resolve, ms)
-  })
-};
+
 let promise = new Promise((resolve, reject) => {
   tabletojson.convertUrl(
     'https://www.infomoney.com.br/cotacoes/empresas-b3/',
@@ -37,9 +33,14 @@ let promise = new Promise((resolve, reject) => {
 let init = async () => {
   await promise;
   tickers.forEach(async (element) => {
-    await controller.stocks(element);
-    console.log("Carregado", element)
-    await sleep(60000);
+    try{
+      await controller.stocks(element);
+      console.log("Carregando", element)
+      
+    }catch (e){
+      console.error(e);
+    }
+   
   });
   app.use(routes)
   app.listen(port, () =>
