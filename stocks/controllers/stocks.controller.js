@@ -28,10 +28,10 @@ module.exports = class StocksController {
                     tables[3].forEach(element => {
                         if(element['0'] === 'Lucro por Ação (LPA) $'){
                             raioXData.lpaAvg = (parseFloat(element['1'].replace(',', '.')) + parseFloat(element['2'].replace(',', '.')) + parseFloat(element['3'].replace(',', '.'))) / 3
-                            raioXData.lpaAvg = raioXData.lpaAvg.replace('.', ',');
+                            raioXData.lpaAvg = raioXData.lpaAvg.toString().replace('.', ',');
                         }else if(element['0'] === 'Valor Patr Ação (VPA) $'){
                             raioXData.vpaAvg = (parseFloat(element['1'].replace(',', '.')) + parseFloat(element['2'].replace(',', '.')) + parseFloat(element['3'].replace(',', '.'))) / 3
-                            raioXData.vpaAvg = raioXData.vpaAvg.replace('.', ',');
+                            raioXData.vpaAvg = raioXData.vpaAvg.toString().replace('.', ',');
                         }
                     });
                     cache.put(this.cacheKey + symbol, raioXData, this.cacheTime);
