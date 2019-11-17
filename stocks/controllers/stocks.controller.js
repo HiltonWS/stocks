@@ -34,6 +34,7 @@ module.exports = class StocksController {
                 cache.put(this.cacheKey, raioXData, this.cacheTime);
                 return raioXData;
             }
-        })
+        });
+        return raioXData;
     }
 }
