@@ -31,10 +31,8 @@ module.exports = class StocksController {
                         raioXData.vpaAvg = (parseFloat(element['1'].replace(',', '.')) + parseFloat(element['2'].replace(',', '.')) + parseFloat(element['3'].replace(',', '.'))) / 3
                     }
                 });
-                cache.put(this.cacheKey, raioXData, this.cacheTime);
-                return raioXData;
+                cache.put(this.cacheKey + symbol, raioXData, this.cacheTime);
             }
         });
-        return raioXData;
     }
 }
