@@ -14,33 +14,48 @@ module.exports = class StocksController {
     }
 
     async stocks(symbol) {
-        let cached = cache.get(this.cacheKey + symbol);
-
-        const raioX = "https://www.guiainvest.com.br/raiox/" + symbol + ".aspx";
-
-        if (cached) {
-            return cached;
+        let symbolArray = [];
+        if(symbol.includes(",")) {
+            symbolArray =  symbol.split(",");
+        } else {
+            symbolArray.push(symbol)
         }
-        let raioXData = {};
-        let promise = new Promise((resolve, reject) => {
-            tabletojson.convertUrl(raioX, (tables) =>{
-                if(tables && tables[3]){
-                    tables[3].forEach(element => {
-                        if(element['0'] === 'Lucro por Ação (LPA) $'){
-                            raioXData.lpaAvg = (parseFloat(element['1'].replace(',', '.')) + parseFloat(element['2'].replace(',', '.')) + parseFloat(element['3'].replace(',', '.'))) / 3
-                            raioXData.lpaAvg = raioXData.lpaAvg.toString().replace('.', ',');
-                        }else if(element['0'] === 'Valor Patr Ação (VPA) $'){
-                            raioXData.vpaAvg = (parseFloat(element['1'].replace(',', '.')) + parseFloat(element['2'].replace(',', '.')) + parseFloat(element['3'].replace(',', '.'))) / 3
-                            raioXData.vpaAvg = raioXData.vpaAvg.toString().replace('.', ',');
-                        }
-                    });
-                    cache.put(this.cacheKey + symbol, raioXData, this.cacheTime);
-                    resolve(raioXData);
-                }
-            });
-        });
+        let resultArray = [];
+        for(let index = 0; index < symbolArray.length; index++) {
+            const element = symbolArray[index];
+            let cached = cache.get(this.cacheKey + element);
 
-        return await promise;
+            const raioX = "https://www.guiainvest.com.br/raiox/" + element + ".aspx";
+
+            if (cached) {
+                resultArray.push(cached);
+                continue;
+            }
+            let raioXData = {};
+            raioXData.stock = element;
+            let promise = new Promise((resolve, reject) => {
+                tabletojson.convertUrl(raioX, (tables) =>{
+                    if(tables && tables[3]){
+                        tables[3].forEach(element => {
+                            if(element['0'] === 'Lucro por Ação (LPA) $'){
+                                raioXData.lpaAvg = (parseFloat(element['1'].replace(',', '.')) + parseFloat(element['2'].replace(',', '.')) + parseFloat(element['3'].replace(',', '.'))) / 3
+                                raioXData.lpaAvg = raioXData.lpaAvg.toString().replace('.', ',');
+                            }else if(element['0'] === 'Valor Patr Ação (VPA) $'){
+                                raioXData.vpaAvg = (parseFloat(element['1'].replace(',', '.')) + parseFloat(element['2'].replace(',', '.')) + parseFloat(element['3'].replace(',', '.'))) / 3
+                                raioXData.vpaAvg = raioXData.vpaAvg.toString().replace('.', ',');
+                            }
+                        });
+                        
+                        cache.put(this.cacheKey + element, raioXData, this.cacheTime);
+                        resolve(raioXData);
+                    }
+                });
+            });
+            let result = await promise;
+            resultArray.push(result);
+        };
+
+        return resultArray;
         
     }
 }
