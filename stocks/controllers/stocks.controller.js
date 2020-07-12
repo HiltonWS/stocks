@@ -43,10 +43,10 @@ module.exports = class StocksController {
                                 raioXData.vpaAvg = (parseFloat(element['1'].replace(',', '.')) + parseFloat(element['2'].replace(',', '.')) + parseFloat(element['3'].replace(',', '.'))) / 3
                                 raioXData.vpaAvg = raioXData.vpaAvg.toString().replace('.', ',');
                             } else if (element['0'] === 'DY (cot fim) %') {
-                                raioXData.dyAvg = ((parseFloat(element['1'].replace(',', '.').replace('%', '') || 0)
+                                raioXData.dyAvg = (((parseFloat(element['1'].replace(',', '.').replace('%', '') || 0)
                                     + parseFloat(element['2'].replace(',', '.').replace('%', '') || 0)
                                     + parseFloat(element['3'].replace(',', '.').replace('%', '') || 0)
-                                    + parseFloat(element['4'].replace(',', '.').replace('%', '')) || 0) / 4) / 100
+                                    + parseFloat(element['4'].replace(',', '.').replace('%', '')) || 0)) / 4) / 100
                                 raioXData.dyAvg = raioXData.dyAvg.toString().replace('.', ',');
                             }
 
