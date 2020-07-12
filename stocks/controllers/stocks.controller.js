@@ -33,8 +33,8 @@ module.exports = class StocksController {
                 continue;
             }
             let raioXData = {};
-            let options = {};
-            options.request = {
+            let optionsH = {};
+            optionsH.request = {
                 headers: {
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.3'
                 }
@@ -43,7 +43,8 @@ module.exports = class StocksController {
             raioXData.stock = element;
             let cont = 0;
             let promise = new Promise((resolve, reject) => {
-                tabletojson.convertUrl(fundamentus, options, (tables) => {
+                tabletojson.convertUrl(fundamentus, optionsH, (tables) => {
+                    console.info(optionsH);
 
                     if(tables){
                         if(tables[2]){
