@@ -38,16 +38,16 @@ module.exports = class StocksController {
                         tables[3].forEach(element => {
                             if(element['0'] === 'Lucro por Ação (LPA) $'){
                                 raioXData.lpaAvg = (parseFloat(element['1'].replace(',', '.')) + parseFloat(element['2'].replace(',', '.')) + parseFloat(element['3'].replace(',', '.'))) / 3
-                                raioXData.lpaAvg = raioXData.lpaAvg.toString().replace('.', ',');
+                                raioXData.lpaAvg = raioXData.lpaAvg;
                             }else if(element['0'] === 'Valor Patr Ação (VPA) $'){
                                 raioXData.vpaAvg = (parseFloat(element['1'].replace(',', '.')) + parseFloat(element['2'].replace(',', '.')) + parseFloat(element['3'].replace(',', '.'))) / 3
-                                raioXData.vpaAvg = raioXData.vpaAvg.toString().replace('.', ',');
+                                raioXData.vpaAvg = raioXData.vpaAvg;
                             }else if(element['0'] === 'DY (cot fim) %'){
                                 raioXData.dyAvg = ((parseFloat(element['1'].replace(',', '.').replace('%', '') || 0) 
                                                 + parseFloat(element['2'].replace(',', '.').replace('%', '') || 0) 
                                                 + parseFloat(element['3'].replace(',', '.').replace('%', '') || 0) 
                                                 + parseFloat(element['4'].replace(',', '.').replace('%', '')) || 0) / 4) / 100
-                                raioXData.dyAvg = raioXData.dyAvg.toString().replace('.', ',');
+                                raioXData.dyAvg = raioXData.dyAvg;
                             }
                             
                         });
