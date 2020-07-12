@@ -15,13 +15,13 @@ module.exports = class StocksController {
 
     async stocks(symbol) {
         let symbolArray = [];
-        if(symbol.includes(",")) {
-            symbolArray =  symbol.split(",");
+        if (symbol.includes(",")) {
+            symbolArray = symbol.split(",");
         } else {
             symbolArray.push(symbol)
         }
         let resultArray = [];
-        for(let index = 0; index < symbolArray.length; index++) {
+        for (let index = 0; index < symbolArray.length; index++) {
             const element = symbolArray[index];
             let cached = cache.get(this.cacheKey + element);
             const raioX = "https://www.guiainvest.com.br/raiox/" + element + ".aspx";
@@ -33,34 +33,37 @@ module.exports = class StocksController {
             let raioXData = {};
             raioXData.stock = element;
             let promise = new Promise((resolve, reject) => {
-                tabletojson.convertUrl(raioX, (tables) =>{
-                    if(tables && tables[3]){
+                tabletojson.convertUrl(raioX, (tables) => {
+                    if (tables && tables[3]) {
                         tables[3].forEach(element => {
-                            if(element['0'] === 'Lucro por Ação (LPA) $'){
+                            if (element['0'] === 'Lucro por Ação (LPA) $') {
                                 raioXData.lpaAvg = (parseFloat(element['1'].replace(',', '.')) + parseFloat(element['2'].replace(',', '.')) + parseFloat(element['3'].replace(',', '.'))) / 3
-                                raioXData.lpaAvg = raioXData.lpaAvg;
-                            }else if(element['0'] === 'Valor Patr Ação (VPA) $'){
+                                raioXData.lpaAvg = raioXData.lpaAvg.toString().replace('.', ',');
+                            } else if (element['0'] === 'Valor Patr Ação (VPA) $') {
                                 raioXData.vpaAvg = (parseFloat(element['1'].replace(',', '.')) + parseFloat(element['2'].replace(',', '.')) + parseFloat(element['3'].replace(',', '.'))) / 3
                                 raioXData.vpaAvg = raioXData.vpaAvg;
-                            }else if(element['0'] === 'DY (cot fim) %'){
-                                raioXData.dyAvg = ((parseFloat(element['1'].replace(',', '.').replace('%', '') || 0) 
-                                                + parseFloat(element['2'].replace(',', '.').replace('%', '') || 0) 
-                                                + parseFloat(element['3'].replace(',', '.').replace('%', '') || 0) 
-                                                + parseFloat(element['4'].replace(',', '.').replace('%', '')) || 0) / 4) / 100
+                            } else if (element['0'] === 'DY (cot fim) %') {
+                                raioXData.dyAvg = ((parseFloat(element['1'].replace(',', '.').replace('%', '') || 0)
+                                    + parseFloat(element['2'].replace(',', '.').replace('%', '') || 0)
+                                    + parseFloat(element['3'].replace(',', '.').replace('%', '') || 0)
+                                    + parseFloat(element['4'].replace(',', '.').replace('%', '')) || 0) / 4) / 100
                                 raioXData.dyAvg = raioXData.dyAvg;
                             }
-                            
+
                         });
                         cache.put(this.cacheKey + element, raioXData, this.cacheTime);
                         resolve(raioXData);
+                    } else {
+                        reject('');
                     }
                 });
+
             });
-            let result = await promise;
-            resultArray.push(result);
+            let result, error = await promise;
+            resultArray.push(result || error);
         };
 
         return resultArray;
-        
+
     }
 }
