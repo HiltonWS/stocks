@@ -24,47 +24,61 @@ module.exports = class StocksController {
         for (let index = 0; index < symbolArray.length; index++) {
             const element = symbolArray[index];
             let cached = cache.get(this.cacheKey + element);
-            const raioX = "https://www.guiainvest.com.br/raiox/" + element + ".aspx";
+            // const penseRico = "https://plataforma.penserico.com/dashboard/cp.pr?e=" + element;
+            const fundamentus = "https://www.fundamentus.com.br/detalhes.php?papel=" + element;
+
 
             if (cached) {
                 resultArray.push(cached);
                 continue;
             }
             let raioXData = {};
+            let options = {};
+            options.request = {
+                headers: {
+                    'User-Agent': 'My serverJS'
+                }
+            };
+
             raioXData.stock = element;
+            let cont = 0;
             let promise = new Promise((resolve, reject) => {
-                tabletojson.convertUrl(raioX, (tables) => {
-                    if (tables && tables[3]) {
-                        tables[3].forEach(element => {
-                            if (element['0'] === 'Lucro por Ação (LPA) $') {
-                                raioXData.lpaAvg = (parseFloat(element['1'].replace(',', '.')) + parseFloat(element['2'].replace(',', '.')) + parseFloat(element['3'].replace(',', '.'))) / 3
-                                raioXData.lpaAvg = raioXData.lpaAvg.toString().replace('.', ',');
-                            } else if (element['0'] === 'Valor Patr Ação (VPA) $') {
-                                raioXData.vpaAvg = (parseFloat(element['1'].replace(',', '.')) + parseFloat(element['2'].replace(',', '.')) + parseFloat(element['3'].replace(',', '.'))) / 3
-                                raioXData.vpaAvg = raioXData.vpaAvg.toString().replace('.', ',');
-                            } else if (element['0'] === 'DY (cot fim) %') {
-                                raioXData.dyAvg = (((parseFloat(element['1'].replace(',', '.').replace('%', '') || 0)
-                                    + parseFloat(element['2'].replace(',', '.').replace('%', '') || 0)
-                                    + parseFloat(element['3'].replace(',', '.').replace('%', '') || 0)
-                                    + parseFloat(element['4'].replace(',', '.').replace('%', '')) || 0)) / 4) / 100
-                                raioXData.dyAvg = raioXData.dyAvg.toString().replace('.', ',');
+                tabletojson.convertUrl(fundamentus, options, (tables) => {
+
+                    if(tables){
+                        if(tables[2]){
+                            if(tables[2][9]){
+                                raioXData.dy = tables[2][8]['3'].toString();
                             }
 
-                        });
-                        cache.put(this.cacheKey + element, raioXData, this.cacheTime);
-                        resolve(raioXData);
-                    } else {
-                        raioXData.dyAvg = 0;
-                        raioXData.lpaAvg = 0;
-                        raioXData.vpaAvg = 0;
-                        raioXData.vpaAvg = 0;
-                        resolve(raioXData);
-                    }
-                });
+                            if(tables[2][1]){
+                                raioXData.lpa = tables[2][1]['5'].toString()
+                            }
 
+                            if(tables[2][2]){
+                                raioXData.vpa = tables[2][2]['5'].toString()
+                            }
+                           
+                        }
+                        if(tables[1] && tables[1][0] && tables[1][0]['1']){
+                            raioXData.valorMercado = (tables[1][0]['1']).toString();
+                        }
+                        if(tables[3]){
+                            if(tables[3][1]){
+                                raioXData.ativos = tables[3][1]['1'].toString()
+                            }
+                            
+                            if(tables[3][2]){
+                                raioXData.disponibilidades = tables[3][2]['1'].toString()
+                            }
+                        }
+                    }
+                    resolve(raioXData);
+
+                });
             });
-            let result, error = await promise;
-            resultArray.push(result || error);
+            let result = await promise;
+            resultArray.push(result);
         };
 
         return resultArray;
