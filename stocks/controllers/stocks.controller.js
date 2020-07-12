@@ -54,7 +54,11 @@ module.exports = class StocksController {
                         cache.put(this.cacheKey + element, raioXData, this.cacheTime);
                         resolve(raioXData);
                     } else {
-                        reject('');
+                        raioXData.dyAvg = 0;
+                        raioXData.lpaAvg = 0;
+                        raioXData.vpaAvg = 0;
+                        raioXData.vpaAvg = 0;
+                        resolve(raioXData);
                     }
                 });
 
