@@ -47,7 +47,7 @@ module.exports = class StocksController {
                                                 + parseFloat(element['2'].replace(',', '.').replace('%', '')) 
                                                 + parseFloat(element['3'].replace(',', '.').replace('%', '')) 
                                                 + parseFloat(element['4'].replace(',', '.').replace('%', ''))) / 4) / 100
-                                raioXData.dyAvg = raioXData.dy.toString().replace('.', ',');
+                                raioXData.dyAvg = raioXData.dyAvg.toString().replace('.', ',');
                             }
                             
                         });
