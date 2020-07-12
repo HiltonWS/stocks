@@ -24,7 +24,6 @@ module.exports = class StocksController {
         for(let index = 0; index < symbolArray.length; index++) {
             const element = symbolArray[index];
             let cached = cache.get(this.cacheKey + element);
-
             const raioX = "https://www.guiainvest.com.br/raiox/" + element + ".aspx";
 
             if (cached) {
@@ -43,9 +42,15 @@ module.exports = class StocksController {
                             }else if(element['0'] === 'Valor Patr Ação (VPA) $'){
                                 raioXData.vpaAvg = (parseFloat(element['1'].replace(',', '.')) + parseFloat(element['2'].replace(',', '.')) + parseFloat(element['3'].replace(',', '.'))) / 3
                                 raioXData.vpaAvg = raioXData.vpaAvg.toString().replace('.', ',');
+                            }else if(element['0'] === 'DY (cot fim) %'){
+                                raioXData.dyAvg = ((parseFloat(element['1'].replace(',', '.').replace('%', '')) 
+                                                + parseFloat(element['2'].replace(',', '.').replace('%', '')) 
+                                                + parseFloat(element['3'].replace(',', '.').replace('%', '')) 
+                                                + parseFloat(element['4'].replace(',', '.').replace('%', ''))) / 4) / 100
+                                raioXData.dyAvg = raioXData.dy.toString().replace('.', ',');
                             }
+                            
                         });
-                        
                         cache.put(this.cacheKey + element, raioXData, this.cacheTime);
                         resolve(raioXData);
                     }
