@@ -1,6 +1,7 @@
-const rp = require('request-promise');
 const cache = require('memory-cache');
 const tabletojson = require('tabletojson');
+const UserAgent = require('user-agents');
+const userAgent = new UserAgent();
 
 module.exports = class StocksController {
 
@@ -24,9 +25,7 @@ module.exports = class StocksController {
         for (let index = 0; index < symbolArray.length; index++) {
             const element = symbolArray[index];
             let cached = cache.get(this.cacheKey + element);
-            // const penseRico = "https://plataforma.penserico.com/dashboard/cp.pr?e=" + element;
             const fundamentus = "https://www.fundamentus.com.br/detalhes.php?papel=" + element;
-
 
             if (cached) {
                 resultArray.push(cached);
@@ -35,17 +34,12 @@ module.exports = class StocksController {
             let raioXData = {};
             let optionsH = {};
             optionsH.request = {
-                headers: {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.3'
-                }
+                headers: {"User-Agent" : userAgent.toString()}
             };
 
             raioXData.stock = element;
-            let cont = 0;
             let promise = new Promise((resolve, reject) => {
                 tabletojson.convertUrl(fundamentus, optionsH, (tables) => {
-                    console.info(optionsH);
-
                     if(tables){
                         if(tables[2]){
                             if(tables[2][9]){
