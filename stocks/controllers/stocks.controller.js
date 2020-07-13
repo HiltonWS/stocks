@@ -1,5 +1,5 @@
 const cache = require('memory-cache');
-const tabletojson = require('tabletojson');
+const tabletojson = require('tabletojson').Tabletojson;
 const UserAgent = require('user-agents');
 const userAgent = new UserAgent();
 
