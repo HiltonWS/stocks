@@ -5,7 +5,7 @@ const StocksController = require('./stocks/controllers/stocks.controller');
 const controller = new StocksController();
 
 const app = express();
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 80;
 
 
 let init = async () => {
