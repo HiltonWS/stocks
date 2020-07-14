@@ -77,7 +77,7 @@ module.exports = class StocksController {
                     }
                     if (raioXData.lpa === '-' || raioXData.lpa === '0,00' ||
                         raioXData.vpa === '-' || raioXData.vpa === '0,00' ||
-                        raioXData.margemLiquida === '-' || raioXData.ativos === '0' || raioXData.ativos === '0' || raioXData.disponibilidades === '0') {
+                        raioXData.margemLiquida === '-' || raioXData.margemLiquida === '0,0%' || raioXData.ativos === '0' || raioXData.ativos === '0' || raioXData.disponibilidades === '0') {
                         tabletojson.convertUrl(raioX, optionsH, (tables) => {
                             if (tables && tables[3]) {
                                 let cont = 0;
