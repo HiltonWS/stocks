@@ -120,6 +120,7 @@ module.exports = class StocksController {
                 });
             });
             let result = await promise;
+            result.margemLiquida = result.margemLiquida.replace('-','0,0%')
             resultArray.push(result);
         };
 
