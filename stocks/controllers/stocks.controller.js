@@ -77,11 +77,10 @@ module.exports = class StocksController {
                     }
                     if (raioXData.lpa === '-' || raioXData.lpa === '0,00' ||
                         raioXData.vpa === '-' || raioXData.vpa === '0,00' ||
-                        raioXData.margemLiquida === '-' || raioXData.margemLiquida === '0,0%' || raioXData.ativos === '0' || raioXData.ativos === '0' || raioXData.disponibilidades === '0') {
+                        raioXData.margemLiquida === '-' || raioXData.ativos === '0' || raioXData.ativos === '0' || raioXData.disponibilidades === '0') {
                         tabletojson.convertUrl(raioX, optionsH, (tables) => {
                             if (tables && tables[3]) {
                                 let cont = 0;
-                                tables[3].forEach(element => {
                                     if(tables[3][9]){
                                         raioXData.lpa = tables[3][9]['3'];
                                     }
@@ -97,7 +96,6 @@ module.exports = class StocksController {
                                     if(tables[3][17]){
                                         raioXData.ativos = parseFloat(tables[3][17]['3'].replace('B', '').replace(',', '.')) * Math.pow(10, 9).toString().replace(".", ",");
                                     }
-                                });
                             }
                             if (raioXData.disponibilidades === '0') {
                                 tabletojson.convertUrl(penseRico, optionsH, (tables) => {
