@@ -91,7 +91,7 @@ module.exports = class StocksController {
 
                                     if(tables[3][13]){
                                         raioXData.margemLiquida = tables[3][13]['3'];
-                                    }
+                                    } 
 
                                     if(tables[3][17]){
                                         raioXData.ativos = parseFloat(tables[3][17]['3'].replace('B', '').replace(',', '.')) * Math.pow(10, 9).toString().replace(".", ",");
@@ -120,7 +120,10 @@ module.exports = class StocksController {
                 });
             });
             let result = await promise;
-            result.margemLiquida = result.margemLiquida.replace('-','0,0%')
+            if(result.margemLiquida === '-'){
+                result.margemLiquida = '0,0%';
+            }
+            
             resultArray.push(result);
         };
 
