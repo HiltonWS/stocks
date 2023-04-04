@@ -16,7 +16,7 @@
     "memory-cache": "^0.2.0",
     "moment": "^2.29.4",
     "moment-timezone": "^0.5.27",
-    "request": "^2.88.0",
+    "request": "^2.88.2",
     "tabletojson": "^2.0.6",
     "user-agents": "^1.0.559"
   }
